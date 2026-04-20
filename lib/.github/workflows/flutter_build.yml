@@ -1,0 +1,73 @@
+name: Flutter CI/CD
+
+# Триггеры: пайплайн будет запускаться при пушах и пулл-реквестах в ветки main и master
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    # Используем Ubuntu, так как для сборки APK macOS не требуется
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Клонирование репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Установка Java (необходима для сборки Android)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Установка Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # Можно поменять на beta или master, если используете их
+          cache: true       # Включает кэширование для ускорения последующих сборок
+
+      # 4. Загрузка зависимостей
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 5. Статический анализ кода
+      - name: Analyze Code
+        run: flutter analyze
+
+      # 6. Запуск тестов
+      - name: Run Tests
+        run: flutter test
+
+      # 7. Сборка Debug APK
+      - name: Build APK (Debug)
+        run: flutter build apk --debug
+
+      # 8. Сборка Release APK
+      - name: Build APK (Release)
+        run: flutter build apk --release
+
+      # 9. Сохранение Debug APK в артефакты GitHub
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        if: always() # Сохранит артефакт, даже если тесты упадут (по желанию можно убрать)
+        with:
+          name: app-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+      # 10. Сохранение Release APK в артефакты GitHub
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
