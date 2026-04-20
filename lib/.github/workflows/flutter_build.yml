@@ -47,27 +47,26 @@ jobs:
       - name: Run Tests
         run: flutter test
 
-      # 7. Сборка Debug APK
-      - name: Build APK (Debug)
-        run: flutter build apk --debug
+      # 7. Сборка Dev APK (Debug)
+      - name: Build Dev APK
+        run: flutter build apk --debug --flavor dev -t lib/main_dev.dart --build-number=${{ github.run_number }}
 
-      # 8. Сборка Release APK
-      - name: Build APK (Release)
-        run: flutter build apk --release
+      # 8. Сборка Prod APK (Release)
+      - name: Build Prod APK
+        run: flutter build apk --release --flavor prod -t lib/main_prod.dart --build-number=${{ github.run_number }}
 
-      # 9. Сохранение Debug APK в артефакты GitHub
-      - name: Upload Debug APK
+      # 9. Сохранение Dev APK в артефакты
+      - name: Upload Dev APK
         uses: actions/upload-artifact@v4
-        if: always() # Сохранит артефакт, даже если тесты упадут (по желанию можно убрать)
         with:
-          name: app-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: qaztender-dev-debug
+          path: build/app/outputs/flutter-apk/app-dev-debug.apk
           retention-days: 7
 
-      # 10. Сохранение Release APK в артефакты GitHub
-      - name: Upload Release APK
+      # 10. Сохранение Prod APK в артефакты
+      - name: Upload Prod APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: qaztender-prod-release
+          path: build/app/outputs/flutter-apk/app-prod-release.apk
           retention-days: 7
